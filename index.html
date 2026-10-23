@@ -43,7 +43,18 @@ const photoVideos = Array.from({length: 6}, (_, i) => {
   const n = String(i + 1).padStart(3, "0");
   return {
     id: "PHOTO_" + n,
-    image: "photos/PHOTO_" + n + ".jpg",
+    image: GITHUB_BASE + "photos/PHOTO_" + n + ".jpg",
+    // Your GitHub files use the exact uppercase .JPG extension.
+    imageCandidates: [
+      GITHUB_BASE + "photos/PHOTO_" + n + ".JPG",
+      GITHUB_BASE + "photos/PHOTO_" + n + ".jpg",
+      GITHUB_BASE + "photos/PHOTO_" + n + ".JPEG",
+      GITHUB_BASE + "photos/PHOTO_" + n + ".jpeg",
+      GITHUB_BASE + "photos/PHOTO_" + n + ".PNG",
+      GITHUB_BASE + "photos/PHOTO_" + n + ".png",
+      GITHUB_BASE + "PHOTO_" + n + ".JPG",
+      GITHUB_BASE + "PHOTO_" + n + ".jpg"
+    ],
     video: GITHUB_BASE + "PHOTO_" + n + ".mp4"
   };
 });
@@ -83,8 +94,19 @@ async function loadReferencePhoto(photo){
     resolve();
    }catch(error){reject(error)}
   };
-  img.onerror=function(){reject(new Error("Cannot load "+photo.image))};
-  img.src=photo.image;
+  const candidates = photo.imageCandidates || [photo.image];
+  let candidateIndex = 0;
+  img.onerror = function() {
+   candidateIndex++;
+   if(candidateIndex < candidates.length) {
+    img.src = candidates[candidateIndex];
+   } else {
+    reject(new Error(
+     "Could not find " + photo.id + " image. Check the photos folder and exact filename/extension (for example PHOTO_001.jpg)."
+    ));
+   }
+  };
+  img.src = candidates[0];
  });
 }
 
