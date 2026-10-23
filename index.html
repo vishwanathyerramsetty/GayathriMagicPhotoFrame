@@ -13,7 +13,8 @@
 <title>HALF SAREE FUNCTION</title>
 
 <script async
-        src="https://docs.opencv.org/4.x/opencv.js">
+        src="https://docs.opencv.org/4.x/opencv.js"
+        onerror="opencvLoadFailed()">
 </script>
 
 <style>
@@ -384,7 +385,7 @@ Array.from(
                 "PHOTO_"+n,
 
             image:
-                "photos/PHOTO_"+n+".jpg",
+                GITHUB_BASE + "photos/PHOTO_"+n+".jpg",
 
             video:
                 GITHUB_BASE+
@@ -451,7 +452,7 @@ let candidateCount=0;
    Number of good ORB matches required.
 */
 
-const REQUIRED_MATCHES = 22;
+const REQUIRED_MATCHES = 12;
 
 
 /*
@@ -475,7 +476,7 @@ const SCAN_INTERVAL = 150;
    Lowe's ratio test.
 */
 
-const MATCH_RATIO = 0.70;
+const MATCH_RATIO = 0.75;
 
 
 /*
@@ -488,6 +489,16 @@ const DETECTION_COOLDOWN = 4000;
 /* =========================================================
    OPENCV READY
    ========================================================= */
+
+function opencvLoadFailed() {
+    const status = document.getElementById("status");
+    const button = document.getElementById("startButton");
+    if (status) status.innerText = "OpenCV failed to load. Check your internet connection and reload this page.";
+    if (button) {
+        button.disabled = true;
+        button.innerText = "OPENCV FAILED TO LOAD";
+    }
+}
 
 function onOpenCvReady(){
 
@@ -669,8 +680,9 @@ async function loadReferencePhoto(photo){
 
                 reject(
                     new Error(
-                        "Cannot load "+
-                        photo.image
+                        "Cannot load reference photo: " +
+                        photo.image +
+                        ". Check the filename and that it exists in the photos folder."
                     )
                 );
 
@@ -698,19 +710,22 @@ async function loadReferencePhotos(){
     referencePhotos=[];
 
 
-    for(
-        const photo of photoVideos
-    ){
-
-        await loadReferencePhoto(
-            photo
-        );
-
+    for (const photo of photoVideos) {
+        try {
+            await loadReferencePhoto(photo);
+        } catch (error) {
+            console.error("REFERENCE PHOTO ERROR:", error);
+            statusText.innerText = error.message;
+            throw error;
+        }
     }
 
+    if (referencePhotos.length === 0) {
+        throw new Error("No reference photos loaded. Check the photos folder and filenames.");
+    }
 
     statusText.innerText =
-        "Ready. Point camera at PHOTO.";
+        "Loaded " + referencePhotos.length + " reference photos. Point camera at one of them.";
 
 }
 
@@ -753,6 +768,10 @@ async function startScanner(){
 
 
     try{
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Camera access is unavailable. Open this page through HTTPS in a modern browser.");
+        }
 
         startButton.disabled=true;
 
@@ -887,8 +906,7 @@ async function startScanner(){
         else{
 
             statusText.innerText =
-                "Camera error: "+
-                error.message;
+                error.message || ("Unable to start scanner: " + error);
 
         }
 
@@ -1029,18 +1047,16 @@ function scanFrame(timestamp){
         const descriptors =
             new cv.Mat();
 
+        const detectMask = new cv.Mat();
 
         liveOrb.detectAndCompute(
-
             gray,
-
-            new cv.Mat(),
-
+            detectMask,
             keypoints,
-
             descriptors
-
         );
+
+        detectMask.delete();
 
 
         let bestPhoto=null;
@@ -1213,7 +1229,7 @@ function scanFrame(timestamp){
 
 
             statusText.innerText=
-                "Scanning... Point camera at a photo.";
+                "Scanning... Hold one of the 6 project photos steady in good light.";
 
         }
 
