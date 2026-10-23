@@ -10,7 +10,7 @@
                initial-scale=1.0,
                viewport-fit=cover">
 
-<title>Welcome to Half Saree Function | Magic Photo Frame</title>
+<title>Magic Photo Frame</title>
 
 <script async
         src="https://docs.opencv.org/4.x/opencv.js">
@@ -388,7 +388,7 @@ Array.from(
 
             video:
                 GITHUB_BASE+
-                "PHOTO_"+n+".mp4"
+                "PHOTO_"+n+".mp4"             
 
         };
 
@@ -492,7 +492,7 @@ const DETECTION_COOLDOWN = 4000;
 function onOpenCvReady(){
 
     statusText.innerText =
-        "Half Saree Function scanner ready. Press START SCANNER.";
+        "OpenCV ready. Press START SCANNER.";
 
     startButton.disabled=false;
 
@@ -710,7 +710,7 @@ async function loadReferencePhotos(){
 
 
     statusText.innerText =
-        "Ready. Point the camera at a Half Saree Function photo.";
+        "Ready. Point camera at PHOTO.";
 
 }
 
@@ -839,7 +839,7 @@ async function startScanner(){
 
 
         statusText.innerText =
-            "Scanning... Point the camera at a Half Saree Function photo.";
+            "Scanning... Point camera at a PHOTO.";
 
 
         lastScanTime=0;
@@ -1213,7 +1213,7 @@ function scanFrame(timestamp){
 
 
             statusText.innerText=
-                "Scanning... Point the camera at a Half Saree Function photo.";
+                "Scanning... Point camera at a photo.";
 
         }
 
@@ -1546,7 +1546,7 @@ function closeVideo(){
 
 
     statusText.innerText=
-        "Ready. Point the camera at a Half Saree Function photo.";
+        "Ready. Point camera at PHOTO.";
 
 
     /* ==============================================
